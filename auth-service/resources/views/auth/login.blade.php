@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sistem Manajemen Perpustakaan</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen flex items-center justify-center">
@@ -14,23 +15,33 @@
                     Sistem Manajemen Perpustakaan
                 </h2>
                 <p class="mt-2 text-center text-sm text-gray-600">
-                    Silakan masuk ke akun Anda
+                    Masuk ke akun Anda
                 </p>
             </div>
             <form class="mt-8 space-y-6" action="{{ route('login') }}" method="POST">
                 @csrf
-                <div class="rounded-md shadow-sm -space-y-px">
+                <div class="space-y-4">
                     <div>
-                        <label for="email" class="sr-only">Email address</label>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                            Email
+                        </label>
                         <input id="email" name="email" type="email" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                            placeholder="Email address">
+                            class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+                            placeholder="Masukkan email Anda">
                     </div>
                     <div>
-                        <label for="password" class="sr-only">Password</label>
-                        <input id="password" name="password" type="password" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                            placeholder="Password">
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                            Password
+                        </label>
+                        <div class="relative">
+                            <input id="password" name="password" type="password" required 
+                                class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+                                placeholder="Masukkan password Anda">
+                            <button type="button" onclick="togglePassword()" 
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500 focus:outline-none">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -75,5 +86,22 @@
             @endif
         </div>
     </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
 </body>
 </html> 

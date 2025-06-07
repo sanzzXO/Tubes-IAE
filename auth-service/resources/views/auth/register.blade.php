@@ -19,30 +19,38 @@
             </div>
             <form class="mt-8 space-y-6" action="{{ route('register') }}" method="POST">
                 @csrf
-                <div class="rounded-md shadow-sm -space-y-px">
+                <div class="space-y-4">
                     <div>
-                        <label for="name" class="sr-only">Nama Lengkap</label>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nama Lengkap
+                        </label>
                         <input id="name" name="name" type="text" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                            placeholder="Nama Lengkap">
+                            class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+                            placeholder="Masukkan nama lengkap Anda">
                     </div>
                     <div>
-                        <label for="email" class="sr-only">Email</label>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                            Email
+                        </label>
                         <input id="email" name="email" type="email" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                            placeholder="Email">
+                            class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+                            placeholder="Masukkan email Anda">
                     </div>
                     <div>
-                        <label for="password" class="sr-only">Password</label>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                            Password
+                        </label>
                         <input id="password" name="password" type="password" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                            placeholder="Password">
+                            class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+                            placeholder="Masukkan password Anda">
                     </div>
                     <div>
-                        <label for="password_confirmation" class="sr-only">Konfirmasi Password</label>
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">
+                            Konfirmasi Password
+                        </label>
                         <input id="password_confirmation" name="password_confirmation" type="password" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                            placeholder="Konfirmasi Password">
+                            class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+                            placeholder="Masukkan ulang password Anda">
                     </div>
                 </div>
 
