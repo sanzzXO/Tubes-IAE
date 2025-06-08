@@ -8,11 +8,28 @@
     "variable": [
         {
             "key": "base_url",
-            "value": "http://localhost:8000/api/v1",
+            "value": "http://localhost:8000/api",
             "type": "string"
         }
     ],
     "item": [
+        {
+            "name": "Health Check",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/health",
+                    "host": ["{{base_url}}"],
+                    "path": ["health"]
+                }
+            }
+        },
         {
             "name": "Categories",
             "item": [
@@ -140,7 +157,7 @@
                     }
                 },
                 {
-                    "name": "Search Books",
+                    "name": "Search Books with Filters",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -150,7 +167,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/books?search=programming&category_id=3&available_only=true",
+                            "raw": "{{base_url}}/books?search=programming&category_id=3&available_only=1&per_page=5",
                             "host": ["{{base_url}}"],
                             "path": ["books"],
                             "query": [
@@ -164,9 +181,30 @@
                                 },
                                 {
                                     "key": "available_only",
-                                    "value": "true"
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "5"
                                 }
                             ]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Books by Query",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/books/search/programming",
+                            "host": ["{{base_url}}"],
+                            "path": ["books", "search", "programming"]
                         }
                     }
                 },
@@ -228,37 +266,12 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"title\": \"To Kill a Mockingbird - Updated\",\n    \"author\": \"Harper Lee\",\n    \"isbn\": \"978-0-06-112008-4\",\n    \"description\": \"Updated description\",\n    \"category_id\": 1,\n    \"stock\": 10,\n    \"publication_year\": 1960,\n    \"publisher\": \"J. B. Lippincott & Co.\"\n}"
+                            "raw": "{\n    \"title\": \"To Kill a Mockingbird - Updated\",\n    \"author\": \"Harper Lee\",\n    \"isbn\": \"978-0-06-112008-4\",\n    \"description\": \"Updated description for this classic novel\",\n    \"category_id\": 1,\n    \"stock\": 10,\n    \"publication_year\": 1960,\n    \"publisher\": \"J. B. Lippincott & Co.\"\n}"
                         },
                         "url": {
                             "raw": "{{base_url}}/books/1",
                             "host": ["{{base_url}}"],
                             "path": ["books", "1"]
-                        }
-                    }
-                },
-                {
-                    "name": "Update Book Stock",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "Accept",
-                                "value": "application/json"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"stock\": 15,\n    \"available\": 12\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/books/1/stock",
-                            "host": ["{{base_url}}"],
-                            "path": ["books", "1", "stock"]
                         }
                     }
                 },
