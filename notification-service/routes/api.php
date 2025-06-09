@@ -1,7 +1,14 @@
 <?php
 
-use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\NotificationController;
 
-Route::post('/notify', [NotificationController::class, 'send']);
-Route::get('/notify/{user_id}', [NotificationController::class, 'getUserNotifications']);
+// Notification endpoints
+Route::post('/notifications/borrowing', [NotificationController::class, 'sendBorrowingNotification']);
+Route::post('/notifications/reminder', [NotificationController::class, 'sendReminderNotification']);
+Route::post('/notifications/fine', [NotificationController::class, 'sendFineNotification']);
+Route::post('/notifications/availability', [NotificationController::class, 'sendAvailabilityNotification']);
+
+// Get notifications
+Route::get('/notifications/user/{userId}', [NotificationController::class, 'getUserNotifications']);
+Route::get('/notifications', [NotificationController::class, 'getAllNotifications']);
