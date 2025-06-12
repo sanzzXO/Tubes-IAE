@@ -1,0 +1,298 @@
+{
+    "info": {
+        "_postman_id": "book-catalog-api",
+        "name": "Book Catalog Service API",
+        "description": "API endpoints for the Book Catalog microservice",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000/api",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Health Check",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/health",
+                    "host": ["{{base_url}}"],
+                    "path": ["health"]
+                }
+            }
+        },
+        {
+            "name": "Categories",
+            "item": [
+                {
+                    "name": "Get All Categories",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/categories",
+                            "host": ["{{base_url}}"],
+                            "path": ["categories"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Category",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Programming\",\n    \"description\": \"Books about programming and software development\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/categories",
+                            "host": ["{{base_url}}"],
+                            "path": ["categories"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Category by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/categories/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["categories", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Category",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Fiction Updated\",\n    \"description\": \"Updated description for fiction books\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/categories/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["categories", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Category",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/categories/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["categories", "1"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Books",
+            "item": [
+                {
+                    "name": "Get All Books",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/books",
+                            "host": ["{{base_url}}"],
+                            "path": ["books"]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Books with Filters",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/books?search=programming&category_id=3&available_only=1&per_page=5",
+                            "host": ["{{base_url}}"],
+                            "path": ["books"],
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": "programming"
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "3"
+                                },
+                                {
+                                    "key": "available_only",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "5"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Books by Query",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/books/search/programming",
+                            "host": ["{{base_url}}"],
+                            "path": ["books", "search", "programming"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Book",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Laravel: Up & Running\",\n    \"author\": \"Matt Stauffer\",\n    \"isbn\": \"978-1-491-93698-5\",\n    \"description\": \"A Framework for Building Modern PHP Apps\",\n    \"category_id\": 3,\n    \"stock\": 10,\n    \"publication_year\": 2019,\n    \"publisher\": \"O'Reilly Media\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/books",
+                            "host": ["{{base_url}}"],
+                            "path": ["books"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Book by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/books/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["books", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Book",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"To Kill a Mockingbird - Updated\",\n    \"author\": \"Harper Lee\",\n    \"isbn\": \"978-0-06-112008-4\",\n    \"description\": \"Updated description for this classic novel\",\n    \"category_id\": 1,\n    \"stock\": 10,\n    \"publication_year\": 1960,\n    \"publisher\": \"J. B. Lippincott & Co.\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/books/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["books", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Book",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/books/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["books", "1"]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
