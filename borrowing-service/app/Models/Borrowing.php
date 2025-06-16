@@ -51,13 +51,14 @@ class Borrowing extends Model
     // Hitung denda otomatis
     public function calculateFine($dailyFineRate = 1000)
     {
-        if ($this->status === 'returned' || $this->due_date >= now()) {
-            return 0;
+        if ($this->returned_date && $this->due_date < $this->returned_date) {
+            $overdueDays = $this->returned_date->diffInDays($this->due_date);
+            return $overdueDays * $dailyFineRate;
         }
 
-        $overdueDays = now()->diffInDays($this->due_date);
-        return $overdueDays * $dailyFineRate;
+        return 0;
     }
+
 
     // Update status overdue otomatis
     public function updateOverdueStatus()
