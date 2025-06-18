@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamp('approved_at')->nullable();
             $table->unsignedBigInteger('approved_by')->nullable();
             $table->timestamps();
+            $table->softDeletes();
             
             // Index untuk performa
             $table->index(['book_id', 'is_approved']);
