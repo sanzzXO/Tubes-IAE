@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+
 class Review extends Model
 {
     use HasFactory, SoftDeletes;
@@ -17,31 +18,15 @@ class Review extends Model
         'user_id',
         'book_id',
         'rating',
-        'comment',
-        'is_approved',
-        'approved_at',
-        'approved_by'
+        'comment'
+        // Removed is_approved, approved_at, approved_by
     ];
 
     protected $casts = [
-        'is_approved' => 'boolean',
-        'approved_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
-
-    // Scope untuk review yang disetujui
-    public function scopeApproved($query)
-    {
-        return $query->where('is_approved', true);
-    }
-
-    // Scope untuk review pending
-    public function scopePending($query)
-    {
-        return $query->where('is_approved', false);
-    }
-
+    
     // Method untuk mendapatkan info user dari auth service
     public function getUserInfo()
     {
