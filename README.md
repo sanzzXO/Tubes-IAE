@@ -8,7 +8,7 @@ Sistem perpustakaan digital berbasis microservices yang terdiri dari 4 layanan u
 ### 🔐 Auth Service
 - Registrasi dan login pengguna
 - Manajemen role (user/staff)
-- JWT token authentication
+- Sanctum token authentication
 
 ### 📚 Book Catalog Service  
 - Manajemen katalog buku
@@ -49,7 +49,7 @@ Sistem perpustakaan digital berbasis microservices yang terdiri dari 4 layanan u
 ## Teknologi
 - **Backend**: Laravel 10
 - **Database**: MySQL
-- **Authentication**: JWT
+- **Authentication**: Laravel Sanctum
 - **API**: RESTful API
 
 ## Dokumentasi API
