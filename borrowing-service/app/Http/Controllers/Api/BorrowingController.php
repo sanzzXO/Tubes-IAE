@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Borrowing;
 use App\Services\BookService;
 use App\Services\UserService;
@@ -10,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class BorrowingController extends Controller
 {
@@ -82,10 +84,19 @@ class BorrowingController extends Controller
         try {
             // Cek ketersediaan buku
             $book = $this->bookService->getBook($request->book_id);
-            if (!$book || $book['available_copies'] <= 0) {
+            if (!$book) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Buku tidak tersedia untuk dipinjam'
+                    'message' => 'Buku tidak ditemukan'
+                ], 404);
+            }
+
+            // Cek ketersediaan stok buku
+            $available = $this->bookService->getBookAvailability($request->book_id);
+            if ($available <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Buku tidak tersedia untuk dipinjam (stok habis)'
                 ], 400);
             }
 
@@ -96,6 +107,14 @@ class BorrowingController extends Controller
                     'success' => false,
                     'message' => 'User tidak ditemukan'
                 ], 404);
+            }
+
+            // Cek apakah user aktif
+            if (!$this->userService->isUserActive($request->user_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User tidak aktif'
+                ], 400);
             }
 
             // Cek apakah user sudah meminjam buku yang sama
@@ -119,22 +138,22 @@ class BorrowingController extends Controller
             if ($activeLoans >= 5) { // Maksimal 5 buku
                 return response()->json([
                     'success' => false,
-                    'message' => 'User sudah mencapai batas maksimal peminjaman'
+                    'message' => 'User sudah mencapai batas maksimal peminjaman (5 buku)'
                 ], 400);
             }
 
             $loanPeriod = $request->get('loan_period_days', 14); // Default 14 hari
             $borrowedDate = Carbon::parse($request->borrowed_date);
-            $dueDate = $borrowedDate->addDays($loanPeriod);
+            $dueDate = $borrowedDate->copy()->addDays($loanPeriod);
 
             // Buat data peminjaman
             $borrowing = Borrowing::create([
                 'user_id' => $request->user_id,
                 'book_id' => $request->book_id,
-                'isbn' => $book['isbn'] ?? null,
-                'book_title' => $book['title'],
-                'user_name' => $user['name'],
-                'user_email' => $user['email'],
+                'isbn' => $book['isbn'] ?? $book['ISBN'] ?? null,
+                'book_title' => $book['title'] ?? $book['name'] ?? 'Unknown Book',
+                'name' => $user['name'] ?? $user['username'] ?? 'Unknown User',
+                'email' => $user['email'] ?? null,
                 'borrowed_date' => $borrowedDate,
                 'due_date' => $dueDate,
                 'status' => 'borrowed',
@@ -142,7 +161,15 @@ class BorrowingController extends Controller
             ]);
 
             // Update stok buku di Book Service
-            $this->bookService->decreaseStock($request->book_id, 1);
+            $stockUpdated = $this->bookService->decreaseStock($request->book_id, 1);
+            if (!$stockUpdated) {
+                // Rollback jika gagal update stok
+                $borrowing->delete();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memperbarui stok buku'
+                ], 500);
+            }
 
             // Clear cache
             Cache::forget("user_borrowings_{$request->user_id}");
@@ -155,6 +182,12 @@ class BorrowingController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
+            Log::error('Error creating borrowing', [
+                'user_id' => $request->user_id,
+                'book_id' => $request->book_id,
+                'error' => $e->getMessage()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
