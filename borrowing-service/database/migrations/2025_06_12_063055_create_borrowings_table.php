@@ -14,13 +14,14 @@ return new class extends Migration
             $table->string('book_id'); // ID dari Book Catalog Service
             $table->string('isbn')->nullable();
             $table->string('book_title');
-            $table->string('user_name');
-            $table->string('user_email');
+            $table->string('name');
+            $table->string('email');
             $table->date('borrowed_date');
             $table->date('due_date');
             $table->date('returned_date')->nullable();
             $table->enum('status', ['borrowed', 'returned', 'overdue'])->default('borrowed');
             $table->decimal('fine_amount', 10, 2)->default(0);
+            $table->integer('extension_count')->default(0);
             $table->text('notes')->nullable();
             $table->timestamps();
             

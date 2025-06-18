@@ -15,13 +15,14 @@ class Borrowing extends Model
         'book_id',
         'isbn',
         'book_title',
-        'user_name',
-        'user_email',
+        'name',
+        'email',
         'borrowed_date',
         'due_date',
         'returned_date',
         'status',
         'fine_amount',
+        'extension_count',
         'notes'
     ];
 
