@@ -269,7 +269,8 @@ class ReviewController extends Controller
     protected function bookExists($bookId): bool
     {
         try {
-            $response = Http::get(config('services.book_service_url') . "/books/{$bookId}");
+            // Fix the URL structure to match the actual API endpoint
+            $response = Http::get(config('services.book_catalog_service.url') . "/api/books/{$bookId}");
             return $response->successful();
         } catch (\Exception $e) {
             Log::error('Error checking book existence: ' . $e->getMessage());
