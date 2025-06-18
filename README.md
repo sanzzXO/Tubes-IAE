@@ -1,1 +1,56 @@
-TUBES IAE
+# TUBES IAE - Sistem Perpustakaan Digital
+
+## Deskripsi
+Sistem perpustakaan digital berbasis microservices yang terdiri dari 4 layanan utama untuk mengelola katalog buku, peminjaman, ulasan, dan autentikasi pengguna.
+
+## Layanan yang Tersedia
+
+### 🔐 Auth Service
+- Registrasi dan login pengguna
+- Manajemen role (user/staff)
+- Sanctum token authentication
+
+### 📚 Book Catalog Service  
+- Manajemen katalog buku
+- Kategori buku
+- Pencarian dan filter buku
+
+### 📖 Borrowing Service
+- Peminjaman dan pengembalian buku
+- Perpanjangan masa pinjam
+- Notifikasi keterlambatan
+
+### ⭐ Review Service
+- Ulasan dan rating buku
+- Moderasi ulasan
+- Statistik rating
+
+## Cara Menjalankan
+
+1. **Clone repository**
+   ```bash
+   git clone [url-repository]
+   cd Tubes-IAE
+   ```
+
+2. **Jalankan semua layanan**
+   ```bash
+   ./run-services.bat
+   ```
+
+3. **Atau jalankan manual per layanan**
+   ```bash
+   cd auth-service && php artisan serve --port=8001
+   cd book-catalog-service && php artisan serve --port=8002  
+   cd borrowing-service && php artisan serve --port=8003
+   cd review-service && php artisan serve --port=8004
+   ```
+
+## Teknologi
+- **Backend**: Laravel 10
+- **Database**: MySQL
+- **Authentication**: Laravel Sanctum
+- **API**: RESTful API
+
+## Dokumentasi API
+Lihat file `postman_collection.json` untuk contoh request API lengkap.
