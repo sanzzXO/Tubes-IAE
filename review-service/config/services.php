@@ -49,5 +49,6 @@ return [
     'book_catalog_service' => [
         'url' => env('BOOK_CATALOG_SERVICE_URL', 'http://localhost:8001'),
     ],
+    'book_service_url' => env('BOOK_CATALOG_SERVICE_URL', 'http://localhost:8001'),
 
 ];
