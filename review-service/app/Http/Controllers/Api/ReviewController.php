@@ -6,16 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreReviewRequest;
 use App\Http\Requests\UpdateReviewRequest;
 use App\Models\Review;
+use App\Services\AuthService;
+use App\Services\BookCatalogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ReviewController extends Controller
 {
-    // Remove approve method entirely
+    protected $authService;
+    protected $bookService;
+
+    public function __construct(AuthService $authService, BookCatalogService $bookService)
+    {
+        $this->authService = $authService;
+        $this->bookService = $bookService;
+    }
 
     public function index(Request $request): JsonResponse
     {
@@ -29,8 +37,6 @@ class ReviewController extends Controller
         if ($request->has('user_id')) {
             $query->where('user_id', $request->user_id);
         }
-        
-        // No more is_approved filter
         
         // Sorting
         $sortField = $request->input('sort_by', 'created_at');
@@ -84,8 +90,8 @@ class ReviewController extends Controller
             $bookId = $request->book_id;
             $userId = $request->user_id;
 
-            // Validasi apakah buku exists
-            if (!$this->bookExists($bookId)) {
+            // Validasi apakah buku exists menggunakan service
+            if (!$this->bookService->bookExists($bookId)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Buku tidak ditemukan'
@@ -108,7 +114,6 @@ class ReviewController extends Controller
             
             $reviewData = $request->validated();
             $reviewData['user_id'] = $userId;
-            // No more approval-related fields
             
             $review = Review::create($reviewData);
 
@@ -154,7 +159,6 @@ class ReviewController extends Controller
             DB::beginTransaction();
             
             $review->update($request->validated());
-            // No more approval-related code
 
             // Clear cache
             $this->clearBookReviewCache($review->book_id);
@@ -228,15 +232,15 @@ class ReviewController extends Controller
                 ]);
             }
             
-            // Validate if book exists
-            if (!$this->bookExists($bookId)) {
+            // Validate if book exists using service
+            if (!$this->bookService->bookExists($bookId)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Buku tidak ditemukan'
                 ], 404);
             }
             
-            // Get reviews for this book (no more is_approved filter)
+            // Get reviews for this book
             $reviews = Review::where('book_id', $bookId)
                             ->orderBy('created_at', 'desc')
                             ->get();
@@ -266,18 +270,6 @@ class ReviewController extends Controller
     }
 
     // Helper methods
-    protected function bookExists($bookId): bool
-    {
-        try {
-            // Fix the URL structure to match the actual API endpoint
-            $response = Http::get(config('services.book_catalog_service.url') . "/api/books/{$bookId}");
-            return $response->successful();
-        } catch (\Exception $e) {
-            Log::error('Error checking book existence: ' . $e->getMessage());
-            return false;
-        }
-    }
-
     protected function clearBookReviewCache($bookId): void
     {
         Cache::forget("book_reviews_{$bookId}");

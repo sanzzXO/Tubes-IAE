@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -27,8 +28,9 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => static::$password ??= Hash::make('password123'),
             'remember_token' => Str::random(10),
+            'role' => fake()->randomElement(['user', 'staff']),
         ];
     }
 
@@ -39,6 +41,46 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a staff member.
+     */
+    public function staff(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'staff',
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a regular user.
+     */
+    public function user(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'user',
+        ]);
+    }
+
+    /**
+     * Indicate that the user has a specific role.
+     */
+    public function role(string $role): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => $role,
+        ]);
+    }
+
+    /**
+     * Indicate that the user has a specific password.
+     */
+    public function password(string $password): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'password' => Hash::make($password),
         ]);
     }
 }

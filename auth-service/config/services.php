@@ -35,4 +35,31 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Microservices Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for internal microservices integration
+    |
+    */
+
+    'book_catalog' => [
+        'url' => env('BOOK_CATALOG_SERVICE_URL', 'http://localhost:8001/api'),
+        'token' => env('BOOK_CATALOG_SERVICE_TOKEN', 'book-catalog-service-token'),
+        'timeout' => env('BOOK_CATALOG_SERVICE_TIMEOUT', 15),
+    ],
+
+    'borrowing' => [
+        'url' => env('BORROWING_SERVICE_URL', 'http://localhost:8002/api'),
+        'token' => env('BORROWING_SERVICE_TOKEN', 'borrowing-service-token'),
+        'timeout' => env('BORROWING_SERVICE_TIMEOUT', 15),
+    ],
+
+    'review' => [
+        'url' => env('REVIEW_SERVICE_URL', 'http://localhost:8003/api'),
+        'token' => env('REVIEW_SERVICE_TOKEN', 'review-service-token'),
+        'timeout' => env('REVIEW_SERVICE_TIMEOUT', 15),
+    ],
+
 ];

@@ -4,9 +4,37 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\StaffController;
+use App\Services\BookCatalogService;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+// Health check endpoint
+Route::get('/health', function () {
+    return response()->json([
+        'service' => 'Auth Service',
+        'status' => 'healthy',
+        'timestamp' => now()->toISOString()
+    ]);
+});
+
+// Test integration with other services
+Route::get('/test-integration', function (BookCatalogService $bookService) {
+    $bookServiceConnected = $bookService->testConnection();
+    
+    return response()->json([
+        'service' => 'Auth Service',
+        'integrations' => [
+            'book_catalog_service' => [
+                'connected' => $bookSe` `````````````````````````````   `   rviceConnected,
+                'url' => config('services.book_catalog.url', 'http://localhost:8001/api'),
+                'status' => $bookServiceConnected ? 'OK' : 'FAILED'
+            ]
+        ],
+        'overall_status' => $bookServiceConnected ? 'HEALTHY' : 'DEGRADED',
+        'timestamp' => now()->toISOString()
+    ]);
 });
 
 // Auth Routes

@@ -6,9 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-
+use App\Services\AuthService;
+use App\Services\BookCatalogService;
 
 class Review extends Model
 {
@@ -30,34 +29,14 @@ class Review extends Model
     // Method untuk mendapatkan info user dari auth service
     public function getUserInfo()
     {
-        try {
-            $response = Http::timeout(5)
-                          ->get(config('services.auth_service.url') . "/api/users/{$this->user_id}");
-            
-            if ($response->successful()) {
-                return $response->json()['data'];
-            }
-        } catch (\Exception $e) {
-            Log::error("Failed to fetch user info from auth service: " . $e->getMessage());
-        }
-        
-        return null;
+        $authService = app(AuthService::class);
+        return $authService->getUser($this->user_id);
     }
 
     // Method untuk mendapatkan info book dari book catalog service
     public function getBookInfo()
     {
-        try {
-            $response = Http::timeout(5)
-                          ->get(config('services.book_catalog_service.url') . "/api/books/{$this->book_id}");
-            
-            if ($response->successful()) {
-                return $response->json()['data'];
-            }
-        } catch (\Exception $e) {
-            Log::error("Failed to fetch book info from catalog service: " . $e->getMessage());
-        }
-        
-        return null;
+        $bookService = app(BookCatalogService::class);
+        return $bookService->getBook($this->book_id);
     }
 }

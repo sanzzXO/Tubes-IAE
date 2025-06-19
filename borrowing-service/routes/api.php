@@ -27,16 +27,6 @@ Route::post('/borrowings', [BorrowingController::class, 'store']); // Create new
 Route::post('/borrowings/{id}/return', [BorrowingController::class, 'returnBook']); // Return book
 Route::post('/borrowings/{id}/extend', [BorrowingController::class, 'extend']); // Extend borrowing
 
-// Health Check Route
-Route::get('/health', function () {
-    return response()->json([
-        'status' => 'healthy',
-        'service' => 'Borrowing Service',
-        'timestamp' => now()->toISOString(),
-        'version' => '1.0.0'
-    ]);
-});
-
 // Test connection to book-catalog-service
 Route::get('/test-book-service', function (BookService $bookService) {
     $isConnected = $bookService->testConnection();
@@ -91,30 +81,6 @@ Route::get('/test-user/{id}', function (UserService $userService, $id) {
     ]);
 });
 
-// Test service integration
-Route::get('/test-integration', function (BookService $bookService, UserService $userService) {
-    $bookServiceConnected = $bookService->testConnection();
-    $authServiceConnected = $userService->testConnection();
-    
-    return response()->json([
-        'service' => 'Borrowing Service',
-        'integrations' => [
-            'book_catalog_service' => [
-                'connected' => $bookServiceConnected,
-                'url' => config('services.book_catalog.url', 'http://localhost:8001/api'),
-                'status' => $bookServiceConnected ? 'OK' : 'FAILED'
-            ],
-            'auth_service' => [
-                'connected' => $authServiceConnected,
-                'url' => config('services.auth.url', 'http://localhost:8000/api'),
-                'status' => $authServiceConnected ? 'OK' : 'FAILED'
-            ]
-        ],
-        'overall_status' => ($bookServiceConnected && $authServiceConnected) ? 'HEALTHY' : 'DEGRADED',
-        'timestamp' => now()->toISOString()
-    ]);
-});
-
 // API Documentation Route
 Route::get('/', function () {
     return response()->json([
@@ -126,12 +92,10 @@ Route::get('/', function () {
             'POST /borrowings' => 'Create new borrowing',
             'POST /borrowings/{id}/return' => 'Return book',
             'POST /borrowings/{id}/extend' => 'Extend borrowing',
-            'GET /health' => 'Health check',
             'GET /test-book-service' => 'Test connection to book-catalog-service',
             'GET /test-auth-service' => 'Test connection to auth-service',
             'GET /test-book/{id}' => 'Test book retrieval from book-catalog-service',
             'GET /test-user/{id}' => 'Test user retrieval from auth-service',
-            'GET /test-integration' => 'Test all service integrations',
             'GET /' => 'API documentation'
         ],
         'example_requests' => [
