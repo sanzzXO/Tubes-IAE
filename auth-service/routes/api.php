@@ -33,6 +33,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 });
 
 Route::get('/users', [ApiController::class, 'users']);
+Route::get('/users/{id}', [ApiController::class, 'getUser']);
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
