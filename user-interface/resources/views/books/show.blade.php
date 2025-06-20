@@ -27,7 +27,7 @@
                         <div class="col-sm-6">
                             <p class="mb-2">
                                 <i class="fas fa-tag me-2 text-primary"></i>
-                                <strong>Kategori:</strong> {{ $book['category'] }}
+                                <strong>Kategori:</strong> {{ $book['category']['name'] ?? '-' }}
                             </p>
                         </div>
                         <div class="col-sm-6">

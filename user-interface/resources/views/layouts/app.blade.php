@@ -207,9 +207,15 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->is('dashboard*') ? 'active' : '' }}" href="/dashboard">
-                                <i class="fas fa-user me-1"></i>Profil
-                            </a>
+                            @if(session('user_role') === 'staff')
+                                <a class="nav-link {{ request()->is('staff/dashboard*') ? 'active' : '' }}" href="/staff/dashboard">
+                                    <i class="fas fa-user me-1"></i>Profil
+                                </a>
+                            @else
+                                <a class="nav-link {{ request()->is('dashboard*') ? 'active' : '' }}" href="/dashboard">
+                                    <i class="fas fa-user me-1"></i>Profil
+                                </a>
+                            @endif
                         </li>
                         <li class="nav-item">
                             <form method="POST" action="/logout" style="display:inline;">
