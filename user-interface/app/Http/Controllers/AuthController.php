@@ -19,6 +19,12 @@ class AuthController extends Controller
             // Simpan user_id dan token ke session
             Session::put('user_id', $data['user']['id']);
             Session::put('token', $data['token']);
+            Session::put('user', $data['user']); // Simpan data user untuk pengecekan role
+
+            if ($data['user']['role'] === 'staff') {
+                return redirect('/staff/dashboard');
+            }
+            
             return redirect('/dashboard');
         } else {
             $errorMsg = $data['message'] ?? 'Email atau password salah';
