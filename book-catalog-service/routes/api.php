@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\BookApiController;
 use App\Http\Controllers\Api\CategoryApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BookController;
+use App\Http\Controllers\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,4 +44,13 @@ Route::get('/health', function () {
         'timestamp' => now()->toISOString(),
         'version' => '1.0.0'
     ]);
+});
+
+Route::get('/books', [BookController::class, 'index']);
+Route::get('/books/{id}', [BookController::class, 'show']);
+Route::get('/categories', [CategoryController::class, 'index']);
+
+// Test route untuk debugging
+Route::get('/test', function() {
+    return response()->json(['message' => 'API Working!']);
 });

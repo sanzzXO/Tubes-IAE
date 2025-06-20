@@ -13,8 +13,20 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::withCount('books')->get();
-        return view('categories.index', compact('categories'));
+        try {
+            $categories = Category::all();
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => $categories
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
