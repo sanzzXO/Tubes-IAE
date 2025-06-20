@@ -1,27 +1,56 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\BookApiController;
 use App\Http\Controllers\Api\CategoryApiController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BookController;
+use App\Http\Controllers\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::get('/user', function (Request $request) {
     return $request->user();
+})->middleware('auth:sanctum');
+
+// Books API Routes
+Route::prefix('books')->group(function () {
+    Route::get('/', [BookApiController::class, 'index']);
+    Route::get('/{id}', [BookApiController::class, 'show']);
+    Route::post('/', [BookApiController::class, 'store']);
+    Route::put('/{id}', [BookApiController::class, 'update']);
+    Route::delete('/{id}', [BookApiController::class, 'destroy']);
+    Route::get('/search/{query}', [BookApiController::class, 'search']);
 });
 
-// Books API routes
-Route::apiResource('books', BookApiController::class);
+// Categories API Routes
+Route::prefix('categories')->group(function () {
+    Route::get('/', [CategoryApiController::class, 'index']);
+    Route::get('/{id}', [CategoryApiController::class, 'show']);
+    Route::post('/', [CategoryApiController::class, 'store']);
+    Route::put('/{id}', [CategoryApiController::class, 'update']);
+    Route::delete('/{id}', [CategoryApiController::class, 'destroy']);
+});
 
-// Categories API routes
-Route::apiResource('categories', CategoryApiController::class);
+// Health Check
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'OK',
+        'message' => 'Book Catalog Service is running',
+        'timestamp' => now()->toISOString(),
+        'version' => '1.0.0'
+    ]);
+});
+
+Route::get('/books', [BookController::class, 'index']);
+Route::get('/books/{id}', [BookController::class, 'show']);
+Route::get('/categories', [CategoryController::class, 'index']);
+
+// Test route untuk debugging
+Route::get('/test', function() {
+    return response()->json(['message' => 'API Working!']);
+});
