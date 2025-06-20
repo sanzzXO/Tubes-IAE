@@ -16,7 +16,7 @@ class BookController extends Controller
         $category = $request->input('category');
         $params = [];
         if ($query) $params['q'] = $query;
-        if ($category) $params['category'] = $category;
+        if ($category) $params['category_id'] = $category;
         $response = Http::get($this->apiUrl . '/books', $params);
         $body = $response->json();
         if (isset($body['data']) && is_array($body['data'])) {
@@ -52,7 +52,14 @@ class BookController extends Controller
             }
         }
         unset($book);
-        return view('books.index', compact('books', 'query', 'category'));
+        // Ambil daftar kategori
+        $categories = [];
+        $catResponse = Http::get($this->apiUrl . '/categories');
+        $catBody = $catResponse->json();
+        if (isset($catBody['data']) && is_array($catBody['data'])) {
+            $categories = $catBody['data'];
+        }
+        return view('books.index', compact('books', 'query', 'category', 'categories'));
     }
 
     public function show($id)
