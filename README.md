@@ -40,10 +40,10 @@ Sistem perpustakaan digital berbasis microservices yang terdiri dari 4 layanan u
 
 3. **Atau jalankan manual per layanan**
    ```bash
-   cd auth-service && php artisan serve --port=8001
-   cd book-catalog-service && php artisan serve --port=8002  
-   cd borrowing-service && php artisan serve --port=8003
-   cd review-service && php artisan serve --port=8004
+   cd auth-service && php artisan serve --port=8000
+   cd book-catalog-service && php artisan serve --port=8001
+   cd borrowing-service && php artisan serve --port=8002
+   cd review-service && php artisan serve --port=8003
    ```
 
 ## Teknologi
