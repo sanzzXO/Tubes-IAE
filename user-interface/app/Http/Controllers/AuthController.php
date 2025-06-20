@@ -38,7 +38,7 @@ class AuthController extends Controller
             if ($response->successful()) {
                 $data = $response->json();
                 
-                if ($data['status'] === 'success') {
+                if ($data['status'] === true) {
                     // Store user session
                     session([
                         'user_id' => $data['user']['id'],

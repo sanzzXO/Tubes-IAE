@@ -6,14 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreReviewRequest;
 use App\Http\Requests\UpdateReviewRequest;
 use App\Models\Review;
+use App\Services\AuthService;
+use App\Services\BookCatalogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ReviewController extends Controller
 {
-    // Menampilkan semua review
+    // Remove approve method entirely
+
     public function index(Request $request): JsonResponse
     {
         // Filter berdasarkan buku atau user jika ada
@@ -27,9 +32,16 @@ class ReviewController extends Controller
             $query->where('user_id', $request->user_id);
         }
         
-        // Pengurutan dan pagination
-        $reviews = $query->orderBy('created_at', 'desc')
-                        ->paginate(10);
+        // No more is_approved filter
+        
+        // Sorting
+        $sortField = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        $query->orderBy($sortField, $sortDir);
+        
+        // Pagination
+        $perPage = $request->input('per_page', 10);
+        $reviews = $query->paginate($perPage);
         
         // Menambahkan informasi user dan buku pada tiap review
         foreach ($reviews as $review) {
@@ -71,7 +83,7 @@ class ReviewController extends Controller
             $bookId = $request->book_id;
             $userId = $request->user_id;
 
-            // Validasi apakah buku ada
+            // Validasi apakah buku exists
             if (!$this->bookExists($bookId)) {
                 return response()->json([
                     'success' => false,
@@ -90,13 +102,19 @@ class ReviewController extends Controller
                     'message' => 'Anda sudah memberikan review untuk buku ini'
                 ], 400);
             }
+
+            DB::beginTransaction();
             
-            $review = Review::create([
-                'user_id' => $userId,
-                'book_id' => $bookId,
-                'rating' => $request->rating,
-                'comment' => $request->comment
-            ]);
+            $reviewData = $request->validated();
+            $reviewData['user_id'] = $userId;
+            // No more approval-related fields
+            
+            $review = Review::create($reviewData);
+
+            // Clear cache
+            $this->clearBookReviewCache($bookId);
+
+            DB::commit();
 
             // Ambil info user dan book untuk response
             $review->user = $review->getUserInfo();
@@ -130,11 +148,16 @@ class ReviewController extends Controller
                     'message' => 'Anda tidak memiliki akses untuk mengupdate review ini'
                 ], 403);
             }
+
+            DB::beginTransaction();
             
-            $review->update([
-                'rating' => $request->rating,
-                'comment' => $request->comment
-            ]);
+            $review->update($request->validated());
+            // No more approval-related code
+
+            // Clear cache
+            $this->clearBookReviewCache($review->book_id);
+
+            DB::commit();
 
             // Ambil info user dan book untuk response
             $review->user = $review->getUserInfo();
@@ -178,7 +201,19 @@ class ReviewController extends Controller
     public function getByBook($bookId): JsonResponse
     {
         try {
-            // Validasi apakah buku ada
+            // Cache key
+            $cacheKey = "book_reviews_{$bookId}";
+            
+            // Try to get from cache
+            if (Cache::has($cacheKey)) {
+                return response()->json([
+                    'success' => true,
+                    'data' => Cache::get($cacheKey),
+                    'source' => 'cache'
+                ]);
+            }
+            
+            // Validate if book exists
             if (!$this->bookExists($bookId)) {
                 return response()->json([
                     'success' => false,
@@ -186,7 +221,7 @@ class ReviewController extends Controller
                 ], 404);
             }
             
-            // Ambil semua review untuk buku ini
+            // Get reviews for this book (no more is_approved filter)
             $reviews = Review::where('book_id', $bookId)
                             ->orderBy('created_at', 'desc')
                             ->get();
@@ -209,14 +244,21 @@ class ReviewController extends Controller
         }
     }
 
-    // Helper method - cek apakah buku ada
+    // Helper methods
     protected function bookExists($bookId): bool
     {
         try {
+            // Fix the URL structure to match the actual API endpoint
             $response = Http::get(config('services.book_catalog_service.url') . "/api/books/{$bookId}");
             return $response->successful();
         } catch (\Exception $e) {
+            Log::error('Error checking book existence: ' . $e->getMessage());
             return false;
         }
+    }
+
+    protected function clearBookReviewCache($bookId): void
+    {
+        Cache::forget("book_reviews_{$bookId}");
     }
 }

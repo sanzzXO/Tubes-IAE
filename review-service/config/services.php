@@ -42,13 +42,31 @@ return [
         ],
     ],
 
-    'auth_service' => [
-        'url' => env('AUTH_SERVICE_URL', 'http://localhost:8000'),
+    /*
+    |--------------------------------------------------------------------------
+    | Microservices Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for internal microservices integration
+    |
+    */
+
+    'auth' => [
+        'url' => env('AUTH_SERVICE_URL', 'http://localhost:8000/api'),
+        'token' => env('AUTH_SERVICE_TOKEN', 'auth-service-token'),
+        'timeout' => env('AUTH_SERVICE_TIMEOUT', 10),
     ],
 
-    'book_catalog_service' => [
-        'url' => env('BOOK_CATALOG_SERVICE_URL', 'http://localhost:8001'),
+    'book_catalog' => [
+        'url' => env('BOOK_CATALOG_SERVICE_URL', 'http://localhost:8001/api'),
+        'token' => env('BOOK_CATALOG_SERVICE_TOKEN', 'book-catalog-service-token'),
+        'timeout' => env('BOOK_CATALOG_SERVICE_TIMEOUT', 15),
     ],
-    'book_service_url' => env('BOOK_CATALOG_SERVICE_URL', 'http://localhost:8001'),
+
+    'borrowing' => [
+        'url' => env('BORROWING_SERVICE_URL', 'http://localhost:8002/api'),
+        'token' => env('BORROWING_SERVICE_TOKEN', 'borrowing-service-token'),
+        'timeout' => env('BORROWING_SERVICE_TIMEOUT', 15),
+    ],
 
 ];

@@ -22,6 +22,4 @@ Route::middleware('throttle:api')->group(function () {
     
     // Get reviews by book
     Route::get('/books/{bookId}/reviews', [ReviewController::class, 'getByBook']);
-    
-    // Removed approval route
 });

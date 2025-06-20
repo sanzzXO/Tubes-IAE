@@ -12,8 +12,28 @@ class UserController extends Controller
     public function dashboard(Request $request)
     {
         $userId = session('user_id');
-        $response = Http::get($this->apiUrl . "/users/{$userId}");
-        $user = $response->json();
-        return view('dashboard', compact('user'));
+        $user = session('user');
+        if ($user && isset($user['role']) && $user['role'] === 'staff') {
+            return redirect('/staff/dashboard');
+        }
+        // Ambil data user dari auth-service
+        $response = Http::get($this->apiUrl . "/users");
+        $users = $response->json()['data'] ?? [];
+        $userData = null;
+        foreach ($users as $u) {
+            if (isset($u['id']) && $u['id'] == $userId) {
+                $userData = $u;
+                break;
+            }
+        }
+        // Fallback jika tidak ketemu
+        if (!$userData) {
+            $userData = [
+                'name' => '-',
+                'email' => '-',
+                'role' => '-',
+            ];
+        }
+        return view('dashboard', ['user' => $userData]);
     }
 } 

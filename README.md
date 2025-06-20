@@ -5,29 +5,29 @@ Sistem perpustakaan digital berbasis microservices yang terdiri dari 4 layanan u
 
 ## Layanan yang Tersedia
 
-### 🔐 Auth Service
+### 🔐 Auth Service (Port 8000)
 - Registrasi dan login pengguna
 - Manajemen role (user/staff)
 - Sanctum token authentication
 
-### 📚 Book Catalog Service  
+### 📚 Book Catalog Service (Port 8001)
 - Manajemen katalog buku
 - Kategori buku
 - Pencarian dan filter buku
 
-### 📖 Borrowing Service
+### 📖 Borrowing Service (Port 8002)
 - Peminjaman dan pengembalian buku
 - Perpanjangan masa pinjam
 - Notifikasi keterlambatan
 
-### ⭐ Review Service
+### ⭐ Review Service (Port 8003)
 - Ulasan dan rating buku
 - Moderasi ulasan
 - Statistik rating
 
 ## Cara Menjalankan
 
-1. **Clone repository**
+### 1. **Clone repository**
    ```bash
    git clone [url-repository]
    cd Tubes-IAE
