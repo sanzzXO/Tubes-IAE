@@ -49,6 +49,9 @@ class AuthController extends Controller
                     ]);
 
                     echo "✅ Login successful, redirecting to dashboard...\n";
+                    if ($data['user']['role'] === 'staff') {
+                        return redirect('/staff/dashboard');
+                    }
                     return redirect('/dashboard');
                 }
             }

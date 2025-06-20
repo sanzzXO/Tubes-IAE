@@ -92,4 +92,14 @@ class ApiController extends Controller
             'user' => $userdata
         ]);
     }
+
+    //Get All Users API
+    public function users()
+    {
+        $users = \App\Models\User::all();
+        return response()->json([
+            'status' => true,
+            'data' => $users
+        ]);
+    }
 }
