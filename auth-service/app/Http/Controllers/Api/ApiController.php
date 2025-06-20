@@ -102,4 +102,21 @@ class ApiController extends Controller
             'data' => $users
         ]);
     }
+
+    //Get Single User API
+    public function getUser($id)
+    {
+        $user = \App\Models\User::find($id);
+        if ($user) {
+            return response()->json([
+                'status' => true,
+                'data' => $user
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+    }
 }

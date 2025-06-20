@@ -22,9 +22,15 @@
                             <i class="fas fa-user-plus me-2"></i>Daftar Gratis
                         </a>
                     @else
-                        <a class="btn btn-outline-light btn-lg" href="/dashboard">
-                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                        </a>
+                        @if(session('user_role') === 'staff')
+                            <a class="btn btn-outline-light btn-lg" href="/staff/dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        @else
+                            <a class="btn btn-outline-light btn-lg" href="/dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        @endif
                     @endif
                 </div>
             </div>
