@@ -28,7 +28,7 @@
                             </a>
                         @else
                             <a class="btn btn-outline-light btn-lg" href="/dashboard">
-                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                <i class="fas fa-tachometer-alt me-2"></i>profile
                             </a>
                         @endif
                     @endif
