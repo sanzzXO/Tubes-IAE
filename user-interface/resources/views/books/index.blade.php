@@ -31,6 +31,13 @@
         </div>
     @endif
 
+    @error('borrow')
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ $message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @enderror
+
     <!-- Search & Filter -->
     <div class="row mb-4">
         <div class="col-12">
@@ -156,14 +163,24 @@
                             </p>
                         @endif
                         
-                        <div class="d-flex gap-2">
+                        <div class="mt-auto d-flex gap-2">
                             <a href="/books/{{ $book['id'] ?? '#' }}" class="btn btn-outline-primary btn-sm flex-grow-1">
                                 <i class="fas fa-eye me-1"></i>Detail
                             </a>
-                            @if(session('user_id') && isset($book['available']) && $book['available'] > 0)
-                                <a href="/borrowings/create/{{ $book['id'] ?? '#' }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-bookmark me-1"></i>Pinjam
-                                </a>
+                            @if(isset($book['is_borrowed_by_user']) && $book['is_borrowed_by_user'])
+                                <form method="POST" action="/borrowings/{{ $book['borrowing_id'] }}/return">
+                                    @csrf
+                                    <button type="submit" class="btn btn-danger btn-sm">Kembalikan</button>
+                                </form>
+                            @else
+                                <form method="POST" action="/borrowings">
+                                    @csrf
+                                    <input type="hidden" name="book_id" value="{{ $book['id'] }}">
+                                    <button type="submit" class="btn btn-success btn-sm"
+                                        @if(!is_numeric($book['available']) || $book['available'] < 1) disabled @endif>
+                                        Pinjam
+                                    </button>
+                                </form>
                             @endif
                         </div>
                     </div>

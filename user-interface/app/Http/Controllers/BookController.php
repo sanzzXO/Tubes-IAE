@@ -25,6 +25,34 @@ class BookController extends Controller
             if ($booksResponse->successful()) {
                 $responseData = $booksResponse->json();
                 $books = $responseData['data'] ?? [];
+
+                // Tambahkan logika penandaan buku yang sedang dipinjam user
+                $userId = session('user_id');
+                $userBorrowings = [];
+                if ($userId) {
+                    $borrowingsResponse = Http::timeout(30)->get('http://localhost:8002/api/borrowings', [
+                        'user_id' => $userId
+                    ]);
+                    if ($borrowingsResponse->successful()) {
+                        $userBorrowings = $borrowingsResponse->json()['data'] ?? [];
+                    }
+                }
+                foreach ($books as &$book) {
+                    $book['is_borrowed_by_user'] = false;
+                    $book['borrowing_id'] = null;
+                    foreach ($userBorrowings as $borrowing) {
+                        if (
+                            isset($borrowing['book_id'], $borrowing['is_returned']) &&
+                            $borrowing['book_id'] == $book['id'] &&
+                            !$borrowing['is_returned']
+                        ) {
+                            $book['is_borrowed_by_user'] = true;
+                            $book['borrowing_id'] = $borrowing['id'];
+                            break;
+                        }
+                    }
+                }
+                unset($book);
             }
             
             if ($categoriesResponse->successful()) {
