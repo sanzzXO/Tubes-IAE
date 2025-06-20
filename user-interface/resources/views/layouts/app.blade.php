@@ -209,7 +209,7 @@
                         <li class="nav-item">
                             @if(session('user_role') === 'staff')
                                 <a class="nav-link {{ request()->is('staff/dashboard*') ? 'active' : '' }}" href="/staff/dashboard">
-                                    <i class="fas fa-user me-1"></i>Profil
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                                 </a>
                             @else
                                 <a class="nav-link {{ request()->is('dashboard*') ? 'active' : '' }}" href="/dashboard">
