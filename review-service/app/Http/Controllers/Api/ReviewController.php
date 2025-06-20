@@ -249,7 +249,7 @@ class ReviewController extends Controller
     {
         try {
             // Fix the URL structure to match the actual API endpoint
-            $response = Http::get(config('services.book_catalog_service.url') . "/api/books/{$bookId}");
+            $response = Http::get(config('services.book_catalog.url') . "/books/{$bookId}");
             return $response->successful();
         } catch (\Exception $e) {
             Log::error('Error checking book existence: ' . $e->getMessage());
