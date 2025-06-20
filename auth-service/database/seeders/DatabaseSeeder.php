@@ -21,5 +21,10 @@ class DatabaseSeeder extends Seeder
         // Opsional: Buat data user tambahan untuk testing
         // Uncomment baris di bawah jika ingin data user yang lebih banyak
         // User::factory(10)->create();
+
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
     }
 }

@@ -4,388 +4,143 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Borrowing;
-use App\Services\BookService;
-use App\Services\UserService;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Cache;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
-class BorrowingController extends Controller
+class BorrowingController extends Controller    
 {
-    protected $bookService;
-    protected $userService;
-
-    public function __construct(BookService $bookService, UserService $userService)
+    // Get all borrowings
+    public function getAllBorrowings()
     {
-        $this->bookService = $bookService;
-        $this->userService = $userService;
-    }
-
-    /**
-     * Menampilkan daftar peminjaman
-     */
-    public function index(Request $request): JsonResponse
-    {
-        $query = Borrowing::query();
-
-        // Filter berdasarkan status
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Filter berdasarkan user
-        if ($request->has('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
-
-        // Filter berdasarkan buku
-        if ($request->has('book_id')) {
-            $query->where('book_id', $request->book_id);
-        }
-
-        // Filter overdue
-        if ($request->has('overdue') && $request->overdue == 'true') {
-            $query->overdue();
-        }
-
-        $borrowings = $query->orderBy('created_at', 'desc')
-                           ->paginate($request->get('per_page', 15));
-
-        return response()->json([
-            'success' => true,
-            'data' => $borrowings,
-            'message' => 'Data peminjaman berhasil diambil'
-        ]);
-    }
-
-    /**
-     * Membuat peminjaman baru
-     */
-    public function store(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|string',
-            'book_id' => 'required|string',
-            'borrowed_date' => 'required|date',
-            'loan_period_days' => 'integer|min:1|max:30'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-                'message' => 'Validasi gagal'
-            ], 422);
-        }
-
-        try {
-            // Cek ketersediaan buku
-            $book = $this->bookService->getBook($request->book_id);
-            if (!$book) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Buku tidak ditemukan'
-                ], 404);
-            }
-
-            // Cek ketersediaan stok buku
-            $available = $this->bookService->getBookAvailability($request->book_id);
-            if ($available <= 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Buku tidak tersedia untuk dipinjam (stok habis)'
-                ], 400);
-            }
-
-            // Cek data user
-            $user = $this->userService->getUser($request->user_id);
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User tidak ditemukan'
-                ], 404);
-            }
-
-            // Cek apakah user aktif
-            if (!$this->userService->isUserActive($request->user_id)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User tidak aktif'
-                ], 400);
-            }
-
-            // Cek apakah user sudah meminjam buku yang sama
-            $existingBorrow = Borrowing::where('user_id', $request->user_id)
-                                     ->where('book_id', $request->book_id)
-                                     ->where('status', 'borrowed')
-                                     ->first();
-
-            if ($existingBorrow) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User sudah meminjam buku ini'
-                ], 400);
-            }
-
-            // Cek batas maksimal peminjaman user
-            $activeLoans = Borrowing::where('user_id', $request->user_id)
-                                  ->where('status', 'borrowed')
-                                  ->count();
-
-            if ($activeLoans >= 5) { // Maksimal 5 buku
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User sudah mencapai batas maksimal peminjaman (5 buku)'
-                ], 400);
-            }
-
-            $loanPeriod = $request->get('loan_period_days', 14); // Default 14 hari
-            $borrowedDate = Carbon::parse($request->borrowed_date);
-            $dueDate = $borrowedDate->copy()->addDays($loanPeriod);
-
-            // Buat data peminjaman
-            $borrowing = Borrowing::create([
-                'user_id' => $request->user_id,
-                'book_id' => $request->book_id,
-                'isbn' => $book['isbn'] ?? $book['ISBN'] ?? null,
-                'book_title' => $book['title'] ?? $book['name'] ?? 'Unknown Book',
-                'name' => $user['name'] ?? $user['username'] ?? 'Unknown User',
-                'email' => $user['email'] ?? null,
-                'borrowed_date' => $borrowedDate,
-                'due_date' => $dueDate,
-                'status' => 'borrowed',
-                'notes' => $request->notes
-            ]);
-
-            // Update stok buku di Book Service
-            $stockUpdated = $this->bookService->decreaseStock($request->book_id, 1);
-            if (!$stockUpdated) {
-                // Rollback jika gagal update stok
-                $borrowing->delete();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal memperbarui stok buku'
-                ], 500);
-            }
-
-            // Clear cache
-            Cache::forget("user_borrowings_{$request->user_id}");
-            Cache::forget("book_borrowings_{$request->book_id}");
-
-            return response()->json([
-                'success' => true,
-                'data' => $borrowing,
-                'message' => 'Buku berhasil dipinjam'
-            ], 201);
-
-        } catch (\Exception $e) {
-            Log::error('Error creating borrowing', [
-                'user_id' => $request->user_id,
-                'book_id' => $request->book_id,
-                'error' => $e->getMessage()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Menampilkan detail peminjaman
-     */
-    public function show($id): JsonResponse
-    {
-        $borrowing = Borrowing::find($id);
-
-        if (!$borrowing) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data peminjaman tidak ditemukan'
-            ], 404);
-        }
-
-        // Update status overdue jika perlu
-        $borrowing->updateOverdueStatus();
-
-        return response()->json([
-            'success' => true,
-            'data' => $borrowing,
-            'message' => 'Detail peminjaman berhasil diambil'
-        ]);
-    }
-
-    /**
-     * Mengembalikan buku
-     */
-    public function returnBook(Request $request, $id): JsonResponse
-    {
-        $borrowing = Borrowing::find($id);
-
-        if (!$borrowing) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data peminjaman tidak ditemukan'
-            ], 404);
-        }
-
-        if ($borrowing->status === 'returned') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Buku sudah dikembalikan sebelumnya'
-            ], 400);
-        }
-
-        try {
-            $returnDate = $request->get('returned_date', now());
-            $returnDate = Carbon::parse($returnDate);
-
-            // Hitung denda jika terlambat
-            $fineAmount = 0;
-            if ($returnDate->gt($borrowing->due_date)) {
-                $overdueDays = $returnDate->diffInDays($borrowing->due_date);
-                $fineAmount = $overdueDays * 1000; // Rp 1000 per hari
-            }
-
-            // Update data peminjaman
-            $borrowing->update([
-                'returned_date' => $returnDate,
-                'status' => 'returned',
-                'fine_amount' => $fineAmount,
-                'notes' => $request->get('return_notes', $borrowing->notes)
-            ]);
-
-            // Update stok buku di Book Service
-            $this->bookService->increaseStock($borrowing->book_id, 1);
-
-            // Clear cache
-            Cache::forget("user_borrowings_{$borrowing->user_id}");
-            Cache::forget("book_borrowings_{$borrowing->book_id}");
-
-            return response()->json([
-                'success' => true,
-                'data' => $borrowing,
-                'message' => 'Buku berhasil dikembalikan',
-                'fine_amount' => $fineAmount
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Perpanjang masa peminjaman
-     */
-    public function extend(Request $request, $id): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'extend_days' => 'required|integer|min:1|max:14'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $borrowing = Borrowing::find($id);
-
-        if (!$borrowing) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data peminjaman tidak ditemukan'
-            ], 404);
-        }
-
-        if ($borrowing->status !== 'borrowed') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Hanya buku yang sedang dipinjam yang bisa diperpanjang'
-            ], 400);
-        }
-
-        // Cek apakah sudah terlambat
-        if ($borrowing->due_date < now()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Tidak dapat memperpanjang buku yang sudah terlambat'
-            ], 400);
-        }
-
-        try {
-            $extendDays = $request->extend_days;
-            $newDueDate = Carbon::parse($borrowing->due_date)->addDays($extendDays);
-
-            $borrowing->update([
-                'due_date' => $newDueDate,
-                'notes' => $borrowing->notes . " | Diperpanjang {$extendDays} hari pada " . now()->format('Y-m-d H:i:s')
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'data' => $borrowing,
-                'message' => "Masa peminjaman berhasil diperpanjang {$extendDays} hari"
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Mendapatkan history peminjaman user
-     */
-    public function userHistory($userId): JsonResponse
-    {
-        $cacheKey = "user_borrowings_{$userId}";
-        
-        $borrowings = Cache::remember($cacheKey, 3600, function () use ($userId) {
-            return Borrowing::where('user_id', $userId)
-                           ->orderBy('created_at', 'desc')
-                           ->get();
-        });
-
-        return response()->json([
-            'success' => true,
-            'data' => $borrowings,
-            'message' => 'History peminjaman user berhasil diambil'
-        ]);
-    }
-
-    /**
-     * Mendapatkan statistik peminjaman
-     */
-    public function statistics(): JsonResponse
-    {
-        $stats = Cache::remember('borrowing_statistics', 1800, function () {
+        $borrowings = Borrowing::all();
+        $result = $borrowings->map(function ($b) {
+            $bookResponse = \Illuminate\Support\Facades\Http::get('http://localhost:8001/api/books/' . $b->book_id);
+            $title = $bookResponse->successful() ? ($bookResponse->json()['data']['title'] ?? null) : null;
             return [
-                'total_borrowings' => Borrowing::count(),
-                'active_borrowings' => Borrowing::where('status', 'borrowed')->count(),
-                'overdue_borrowings' => Borrowing::overdue()->count(),
-                'total_returned' => Borrowing::where('status', 'returned')->count(),
-                'total_fines' => Borrowing::sum('fine_amount'),
-                'avg_loan_period' => Borrowing::whereNotNull('returned_date')
-                    ->selectRaw('AVG(DATEDIFF(returned_date, borrowed_date)) as avg_days')
-                    ->first()->avg_days ?? 0
+                'id' => $b->id,
+                'book_id' => $b->book_id,
+                'user_id' => $b->user_id,
+                'is_returned' => $b->is_returned,
+                'created_at' => $b->created_at,
+                'updated_at' => $b->updated_at,
+                'book_title' => $title,
             ];
         });
+        return response()->json(['data' => $result]);
+    }
 
+    // Create a new borrowing
+    public function createBorrowing(Request $request)
+    {
+        $request->validate([
+            'book_id' => 'required|integer',
+            'user_id' => 'required|integer',
+        ]);
+        $bookId = $request->book_id;
+        $userId = $request->user_id;
+
+        // Cek ketersediaan buku di book-catalog-service
+        $bookResponse = Http::get('http://localhost:8001/api/books/' . $bookId);
+        if (!$bookResponse->successful()) {
+            return response()->json([
+                'message' => 'Gagal cek ketersediaan buku',
+                'error' => 'Book catalog service unavailable'
+            ], 503);
+        }
+        $bookData = $bookResponse->json();
+        if (!isset($bookData['data']) || !isset($bookData['data']['available'])) {
+            return response()->json([
+                'message' => 'Gagal cek ketersediaan buku',
+                'error' => 'Invalid response from book catalog service'
+            ], 502);
+        }
+        if ($bookData['data']['available'] < 1) {
+            return response()->json([
+                'message' => 'Buku tidak tersedia untuk dipinjam',
+                'error' => 'Book is not available'
+            ], 400);
+        }
+        // Cek apakah buku sudah dipinjam dan belum dikembalikan
+        $existing = Borrowing::where('book_id', $bookId)->where('is_returned', false)->first();
+        if ($existing) {
+            return response()->json([
+                'message' => 'Buku sudah dipinjam',
+                'error' => 'Book already borrowed',
+                'borrowing_id' => $existing->id
+            ], 400);
+        }
+        $borrowing = Borrowing::create([
+            'book_id' => $bookId,
+            'user_id' => $userId,
+            'is_returned' => false,
+        ]);
         return response()->json([
-            'success' => true,
-            'data' => $stats,
-            'message' => 'Statistik peminjaman berhasil diambil'
+            'message' => 'Peminjaman berhasil',
+            'borrowing' => $borrowing,
+            'book_title' => $bookData['data']['title'] ?? null
+        ], 201);
+    }
+
+    // Return a book
+    public function returnBook($borrowingId)
+    {
+        $borrowing = Borrowing::findOrFail($borrowingId);
+        if ($borrowing->is_returned) {
+            return response()->json([
+                'message' => 'Buku sudah dikembalikan',
+                'borrowing' => $borrowing
+            ]);
+        }
+        $borrowing->is_returned = true;
+        $borrowing->save();
+        return response()->json([
+            'message' => 'Buku berhasil dikembalikan',
+            'borrowing' => $borrowing
         ]);
     }
-}
+
+    // Check if book is currently borrowed
+    public function checkBookStatus(Request $request)
+    {
+        $bookId = $request->book_id;
+        $borrowing = Borrowing::where('book_id', $bookId)->where('is_returned', false)->first();
+        return response()->json([
+            'is_borrowed' => !is_null($borrowing),
+            'borrowing_id' => $borrowing?->id
+        ]);
+    }
+
+    // Get borrowing details with book info
+    public function getBorrowingDetails($borrowingId)
+    {
+        $borrowing = Borrowing::findOrFail($borrowingId);
+        $bookResponse = Http::get('http://localhost:8001/api/books/' . $borrowing->book_id);
+        $bookDetails = $bookResponse->successful() ? ($bookResponse->json()['data'] ?? null) : null;
+        return response()->json([
+            'borrowing' => $borrowing,
+            'book' => $bookDetails,
+            'error' => $bookDetails ? null : 'Failed to fetch book details'
+        ]);
+    }
+
+    // Get all currently borrowed books
+    public function getBorrowedBooks()
+    {
+        $borrowed = Borrowing::where('is_returned', false)->get();
+        $result = $borrowed->map(function ($b) {
+            $bookResponse = \Illuminate\Support\Facades\Http::get('http://localhost:8001/api/books/' . $b->book_id);
+            $title = $bookResponse->successful() ? ($bookResponse->json()['data']['title'] ?? null) : null;
+            return [
+                'book_id' => $b->book_id,
+                'borrowing_id' => $b->id,
+                'user_id' => $b->user_id,
+                'borrowed_at' => $b->created_at,
+                'book_title' => $title,
+            ];
+        });
+        return response()->json([
+            'data' => $result,
+            'count' => $result->count()
+        ]);
+    }
+} 
