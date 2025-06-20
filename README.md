@@ -32,7 +32,12 @@ Sistem perpustakaan digital berbasis microservices yang terdiri dari 4 layanan u
    git clone [url-repository]
    cd Tubes-IAE
    ```
+2. **Membuat file .env di tiap folder**
 
+3.  **Menjalankan composer install**
+   ```bash
+   ./composer-install
+   ```
 2. **Jalankan semua layanan**
    ```bash
    ./run-services.bat
