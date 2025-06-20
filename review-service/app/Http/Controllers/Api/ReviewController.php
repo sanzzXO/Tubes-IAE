@@ -32,7 +32,6 @@ class ReviewController extends Controller
             $query->where('user_id', $request->user_id);
         }
         
-        // No more is_approved filter
         
         // Sorting
         $sortField = $request->input('sort_by', 'created_at');
@@ -107,7 +106,6 @@ class ReviewController extends Controller
             
             $reviewData = $request->validated();
             $reviewData['user_id'] = $userId;
-            // No more approval-related fields
             
             $review = Review::create($reviewData);
 

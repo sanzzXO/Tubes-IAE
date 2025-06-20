@@ -18,7 +18,7 @@ class Review extends Model
         'book_id',
         'rating',
         'comment'
-        // Removed is_approved, approved_at, approved_by
+
     ];
 
     protected $casts = [
