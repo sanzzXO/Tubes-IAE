@@ -27,7 +27,7 @@ Route::get('/test-integration', function (BookCatalogService $bookService) {
         'service' => 'Auth Service',
         'integrations' => [
             'book_catalog_service' => [
-                'connected' => $bookSe` `````````````````````````````   `   rviceConnected,
+                'connected' => $bookServiceConnected,
                 'url' => config('services.book_catalog.url', 'http://localhost:8001/api'),
                 'status' => $bookServiceConnected ? 'OK' : 'FAILED'
             ]
