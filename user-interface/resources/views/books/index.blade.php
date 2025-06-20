@@ -2,8 +2,14 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Katalog Buku</h2>
-    <form class="d-flex" method="GET" action="/books">
+    <form class="d-flex align-items-center" method="GET" action="/books">
         <input class="form-control me-2" type="search" name="q" placeholder="Cari buku..." value="{{ $query ?? '' }}">
+        <select class="form-select me-2" name="category" style="width:auto;">
+            <option value="">Semua Kategori</option>
+            @foreach($categories ?? [] as $cat)
+                <option value="{{ $cat['id'] }}" @if(isset($category) && $category == $cat['id']) selected @endif>{{ $cat['name'] }}</option>
+            @endforeach
+        </select>
         <button class="btn btn-outline-primary" type="submit">Cari</button>
     </form>
 </div>
