@@ -13,37 +13,16 @@ class Book extends Model
         'title',
         'author', 
         'isbn',
-        'description',
-        'category_id',
+        'publication_year',
         'stock',
         'available',
-        'cover_image',
-        'publication_year',
-        'publisher'
-    ];
-
-    protected $casts = [
-        'publication_year' => 'integer',
-        'stock' => 'integer',
-        'available' => 'integer'
+        'category_id',
+        'description',
+        'cover'
     ];
 
     public function category()
     {
         return $this->belongsTo(Category::class);
-    }
-
-    public function scopeAvailable($query)
-    {
-        return $query->where('available', '>', 0);
-    }
-
-    public function scopeSearch($query, $search)
-    {
-        return $query->where(function ($q) use ($search) {
-            $q->where('title', 'like', "%{$search}%")
-              ->orWhere('author', 'like', "%{$search}%")
-              ->orWhere('isbn', 'like', "%{$search}%");
-        });
     }
 }

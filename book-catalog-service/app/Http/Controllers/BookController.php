@@ -14,36 +14,67 @@ class BookController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Book::with('category');
-
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', '%' . $search . '%')
-                  ->orWhere('author', 'like', '%' . $search . '%')
-                  ->orWhere('isbn', 'like', '%' . $search . '%');
-            });
-        }
-
-        // Filter by category
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        // Filter by availability
-        if ($request->filled('available_only')) {
-            if ($request->available_only == '1') {
-                $query->where('available', '>', 0);
-            } elseif ($request->available_only == '0') {
-                $query->where('available', '=', 0);
+        try {
+            \Log::info('BookController index called');
+            
+            $query = Book::with('category');
+            
+            // Search functionality
+            if ($request->search) {
+                $query->where(function($q) use ($request) {
+                    $q->where('title', 'like', '%' . $request->search . '%')
+                      ->orWhere('author', 'like', '%' . $request->search . '%')
+                      ->orWhere('isbn', 'like', '%' . $request->search . '%');
+                });
             }
+            
+            // Filter by category
+            if ($request->category_id) {
+                $query->where('category_id', $request->category_id);
+            }
+            
+            $books = $query->get();
+            
+            \Log::info('Books found: ' . $books->count());
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => $books,
+                'count' => $books->count()
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('BookController error: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ], 500);
         }
-
-        $books = $query->latest()->paginate(12);
-        $categories = Category::orderBy('name')->get();
-
-        return view('books.index', compact('books', 'categories'));
+    }
+    
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        try {
+            $book = Book::with('category')->findOrFail($id);
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => $book
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Book not found'
+            ], 404);
+        }
     }
 
     /**
@@ -84,15 +115,6 @@ class BookController extends Controller
 
         return redirect()->route('books.index')
                         ->with('success', 'Buku berhasil ditambahkan!');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Book $book)
-    {
-        $book->load('category');
-        return view('books.show', compact('book'));
     }
 
     /**

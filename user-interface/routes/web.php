@@ -1,35 +1,38 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookController;
+use App\Http\Controllers\BorrowingController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\DashboardController;
 
+// Public routes
 Route::get('/', function () {
     return view('home');
 });
 
-Route::get('/login', function () {
-    return view('auth.login');
+Route::get('/login', [AuthController::class, 'showLogin']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegister']);
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/logout', [AuthController::class, 'logout']);
+
+// Book routes (public access)
+Route::get('/books', [BookController::class, 'index']);
+Route::get('/books/{id}', [BookController::class, 'show']);
+
+// Protected routes
+Route::middleware('auth.session')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/borrowings', [BorrowingController::class, 'index']);
+    Route::get('/borrowings/create/{book_id}', [BorrowingController::class, 'create']);
+    Route::post('/borrowings', [BorrowingController::class, 'store']);
+    Route::post('/borrowings/{id}/return', [BorrowingController::class, 'return']);
+    Route::get('/reviews', [ReviewController::class, 'index']);
+    Route::get('/reviews/create/{book_id}', [ReviewController::class, 'create']);
+    Route::post('/reviews', [ReviewController::class, 'store']);
 });
-
-Route::get('/register', function () {
-    return view('auth.register');
-});
-
-Route::get('/books', 'App\Http\Controllers\BookController@index');
-Route::get('/books/{id}', 'App\Http\Controllers\BookController@show');
-
-Route::get('/borrowings', 'App\Http\Controllers\BorrowingController@index');
-
-Route::get('/reviews', 'App\Http\Controllers\ReviewController@index');
-Route::get('/reviews/create/{bookId}', 'App\Http\Controllers\ReviewController@create');
-
-Route::get('/dashboard', 'App\Http\Controllers\UserController@dashboard');
-Route::get('/staff/dashboard', 'App\Http\Controllers\StaffController@dashboard');
-
-Route::post('/login', 'App\Http\Controllers\AuthController@login');
-Route::post('/reviews', 'App\Http\Controllers\ReviewController@store');
-Route::post('/borrowings', 'App\Http\Controllers\BorrowingController@store');
-Route::post('/borrowings/return/{id}', 'App\Http\Controllers\BorrowingController@return');
-Route::post('/logout', 'App\Http\Controllers\AuthController@logout');
 
 Route::prefix('staff')->group(function () {
     Route::get('/dashboard', 'App\\Http\\Controllers\\StaffController@dashboard');
